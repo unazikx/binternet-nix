@@ -18,7 +18,10 @@
   };
 
   outputs =
-    inputs:
+    inputs@{
+      self,
+      ...
+    }:
     inputs.flake-parts.lib.mkFlake
       {
         inherit
@@ -30,6 +33,21 @@
           "x86_64-linux"
           "x86_64-darwin"
         ];
+
+        flake =
+          {
+            ...
+          }:
+          {
+            nixosModules = {
+              default = self.nixosModules.binternet;
+              binternet = import ./nix/module.nix {
+                inherit
+                  self
+                  ;
+              };
+            };
+          };
 
         perSystem =
           {
