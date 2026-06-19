@@ -1,11 +1,12 @@
 <?php
 
 // Prepare cURL object with options for the search query
-function prepareSearchCurlObj($query, $bookmark = null, $url, $csrftoken = null, $header_function) {
+function prepareSearchCurlObj($query, $bookmark = null, $url, $csrftoken = null, $header_function)
+{
     $data_param_obj = [
-        "options" => [
-            "query" => $query,
-            "bookmarks" => $bookmark ? [$bookmark] : null
+        'options' => [
+            'query' => $query,
+            'bookmarks' => $bookmark ? [$bookmark] : null
         ]
     ];
 
@@ -33,11 +34,12 @@ function prepareSearchCurlObj($query, $bookmark = null, $url, $csrftoken = null,
 }
 
 // Search function to execute the cURL request and process the response
-function search($query, $bookmark, $url, $csrftoken, $header_function) {
+function search($query, $bookmark, $url, $csrftoken, $header_function)
+{
     $ch = prepareSearchCurlObj($query, $bookmark, $url, $csrftoken, $header_function);
-    
+
     $response = curl_exec($ch);
-    
+
     if ($response === false) {
         // Handle cURL error
         $error = curl_error($ch);
@@ -45,14 +47,14 @@ function search($query, $bookmark, $url, $csrftoken, $header_function) {
         return json_encode(['error' => 'CURL Error: ' . $error]);
     }
 
-    curl_close($ch); // Close cURL handle
+    curl_close($ch);  // Close cURL handle
 
     $data = json_decode($response);
     $images = [];
 
     if (isset($data->resource_response->data->results)) {
         foreach ($data->resource_response->data->results as $result) {
-            $url = $result->images->orig->url ?? null; // Use null coalescing for safety
+            $url = $result->images->orig->url ?? null;  // Use null coalescing for safety
             if ($url) {
                 $images[] = $url;
             }
@@ -67,7 +69,7 @@ function search($query, $bookmark, $url, $csrftoken, $header_function) {
 }
 
 // Main execution
-header("Content-Type: application/json");
+header('Content-Type: application/json');
 $result = search($query, $bookmark, $url, $csrftoken, $header_function);
 
 // Handle bookmark for pagination

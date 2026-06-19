@@ -1,7 +1,7 @@
-<?php require "misc/header.php"; ?>
+<?php require 'misc/header.php'; ?>
 <title>
 <?php
-$query = htmlspecialchars(trim($_REQUEST["q"] ?? ''));
+$query = htmlspecialchars(trim($_REQUEST['q'] ?? ''));
 echo $query ?: 'Search' . ' - Binternet';
 ?> - Binternet</title>
 </head>
@@ -12,21 +12,21 @@ echo $query ?: 'Search' . ' - Binternet';
             <?php
             // Validate query length
             if (strlen($query) < 1 || strlen($query) > 64) {
-                header("Location: ./");
+                header('Location: ./');
                 exit();
             }
-            echo "value=\"" . htmlspecialchars($query) . "\"";
+            echo 'value="' . htmlspecialchars($query) . '"';
             ?>
         >
     </form>
 
 <?php
 // Fetching query and optional parameters
-$bookmark = $_GET["bookmark"] ?? null;
-$csrftoken = $_GET["csrftoken"] ?? null;
+$bookmark = $_GET['bookmark'] ?? null;
+$csrftoken = $_GET['csrftoken'] ?? null;
 
 // Pinterest API endpoint
-$url = "https://www.pinterest.com/resource/BaseSearchResource/get/";
+$url = 'https://www.pinterest.com/resource/BaseSearchResource/get/';
 
 class SearchResult
 {
@@ -45,37 +45,37 @@ $header_function = function ($ch, $rawheader) use (&$csrftoken) {
 // Prepare CURL object for search request
 $prepare_search_curl_obj = function ($query, $bookmark) use ($url, $header_function, $csrftoken) {
     $data_param_obj = [
-        "options" => [
-            "query" => $query,
+        'options' => [
+            'query' => $query,
         ],
     ];
-    
+
     if ($bookmark !== null) {
-        $data_param_obj["options"]["bookmarks"] = [$bookmark];
+        $data_param_obj['options']['bookmarks'] = [$bookmark];
     }
 
     $data_param = urlencode(json_encode($data_param_obj));
     $headers = [
-        "x-pinterest-pws-handler: www/search/[scope].js"
+        'x-pinterest-pws-handler: www/search/[scope].js'
     ];
-    
+
     if ($csrftoken !== null) {
         $headers[] = "x-csrftoken: $csrftoken";
         $headers[] = "cookie: csrftoken=$csrftoken";
     }
 
     $finalurl = $bookmark === null ? "$url?data=$data_param" : $url;
-    
+
     $ch = curl_init($finalurl);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HEADERFUNCTION, $header_function);
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    
+
     if ($bookmark !== null) {
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, "data=$data_param");
     }
-    
+
     return $ch;
 };
 
@@ -84,10 +84,10 @@ $search = function ($query, $bookmark) use ($prepare_search_curl_obj) {
     $ch = $prepare_search_curl_obj($query, $bookmark);
     $response = curl_exec($ch);
     $data = json_decode($response);
-    
+
     $images = [];
     echo "<div class='img-container'>";
-    
+
     if ($data && isset($data->resource_response->data->results)) {
         foreach ($data->resource_response->data->results as $result) {
             $image = $result->images->orig;
@@ -97,18 +97,18 @@ $search = function ($query, $bookmark) use ($prepare_search_curl_obj) {
             echo "<img loading='lazy' src='/image_proxy.php?url=" . htmlspecialchars($url) . "'></a>";
         }
     } else {
-        echo "<p>No results found.</p>";
+        echo '<p>No results found.</p>';
     }
-    
-    echo "</div>";
-    
+
+    echo '</div>';
+
     $result = new SearchResult();
     $result->images = $images;
-    
+
     if (isset($data->resource_response->bookmark)) {
         $result->bookmark = $data->resource_response->bookmark;
     }
-    
+
     return $result;
 };
 
@@ -118,10 +118,10 @@ $result = $search($query, $bookmark);
 if ($result->bookmark !== null) {
     $query_encoded = urlencode($query);
     $bookmark_encoded = urlencode($result->bookmark);
-    $csrftoken_encoded = $csrftoken ? urlencode($csrftoken) : "";
+    $csrftoken_encoded = $csrftoken ? urlencode($csrftoken) : '';
 
     echo "<h2 style=\"text-align: center;\"><a href=\"/search.php?q=$query_encoded&bookmark=$bookmark_encoded&csrftoken=$csrftoken_encoded\">Next page</a></h2><br><br><br>";
 }
 
-include "misc/footer.php";
+include 'misc/footer.php';
 ?>

@@ -1,4 +1,4 @@
-<?php require "misc/header.php"; ?>
+<?php require 'misc/header.php'; ?>
 <title>Binternet</title>
 </head>
 <body>
@@ -12,4 +12,4 @@
         </div>
 
     </div>
-<?php require "misc/footer.php"; ?>
+<?php require 'misc/footer.php'; ?>
